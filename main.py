@@ -16,6 +16,20 @@ df['Date'] = pd.to_datetime(df['Date'])
 # Set the app title
 st.title("Traffic Data Visualization")
 
+# Add header with your name, your colleague's name, and LinkedIn profile link
+st.markdown("""
+    <div style="text-align: center;">
+        <h3>Developed by Fakhreddine Annabi & Houssem Ouerghie</h3>
+        <p>
+            <a href="https://www.linkedin.com/in/fakhreddine-annabi/" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/LinkedIn_icon_2022.svg/1200px-LinkedIn_icon_2022.svg.png" width="30" height="30" alt="LinkedIn Profile">
+            </a>
+        </p>
+        <p>© 2024 All Rights Reserved</p>
+    </div>
+    <hr>
+""", unsafe_allow_html=True)
+
 # Create two columns for the first section of the app
 col1, col2 = st.columns(2)
 
