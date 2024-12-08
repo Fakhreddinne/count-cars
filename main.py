@@ -24,7 +24,7 @@ with col1:
     st.subheader("Traffic Data Table")
     st.dataframe(df)  # Show the raw data
 
-# Display summary statistics in the second column
+# Display summary statistics and video in the second column
 with col2:
     st.subheader("Traffic Data Statistics")
     
@@ -34,11 +34,25 @@ with col2:
     avg_up = df['NumberOfCarsGoingUpTheRoad'].mean()
     avg_down = df['NumberOfCarsGoingDownTheRoad'].mean()
 
-    # Display the calculated metrics
-    st.metric("Total Cars Going Up", total_up)
-    st.metric("Total Cars Going Down", total_down)
-    st.metric("Average Cars Going Up per Day", f"{avg_up:.2f}")
-    st.metric("Average Cars Going Down per Day", f"{avg_down:.2f}")
+    # Create two sub-columns to separate statistics and video
+    col21, col22 = st.columns(2)
+    
+    with col21:
+        # Display the calculated metrics
+        st.metric("Total Cars Going Up", total_up)
+        st.metric("Total Cars Going Down", total_down)
+        st.metric("Average Cars Going Up per Day", f"{avg_up:.2f}")
+        st.metric("Average Cars Going Down per Day", f"{avg_down:.2f}")
+    
+    with col22:
+        # Add a video (local file or URL)
+        st.subheader("Traffic Flow Video")
+        try:
+            gif_path = 'output.gif'  # Replace with your GIF file path
+            st.image(gif_path, caption="Traffic Flow - Car-Detection-OpenCV - jitendrasb24 ", use_container_width=True)
+        except FileNotFoundError:
+            st.error("Video file not found. Please ensure 'o    utput.mp4' exists in the app directory.")
+    
 
 # Add a dropdown menu to select sorting by Date or Location
 sort_by = st.selectbox("Sort by", options=["Date", "Location"])
@@ -134,3 +148,17 @@ else:
 
             # Display the plot
             st.pyplot(fig)
+            
+# Add header with your name, your colleague's name, and LinkedIn profile link at the top
+st.markdown("""
+    <div style="text-align: center; font-size: 14px; padding-bottom: 10px;">
+        <h5>Developed by Eng. Fakhreddine Annabi & Eng. Houssem Ouerghie</h5>
+        <p>
+            <a href="https://www.linkedin.com/in/fakhreddine-annabi/" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg" width="20" height="20" alt="LinkedIn Profile">
+            </a>
+        </p>
+        <p>© 2024 All Rights Reserved</p>
+    </div>
+    <hr>
+""", unsafe_allow_html=True)
