@@ -3,92 +3,134 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Set the Streamlit app layout to wide for a better presentation
 st.set_page_config(layout="wide")
 
-# Load the data
+# Load the data from the Excel file
 file_path = 'cars_traffic_data_extended.xlsx'
 df = pd.read_excel(file_path)
 
-# Streamlit app title
+# Ensure 'Date' column is in datetime format for easy filtering and plotting
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Set the app title
 st.title("Traffic Data Visualization")
 
-# Create two columns for the first sections
+# Create two columns for the first section of the app
 col1, col2 = st.columns(2)
 
-# Display data as a table in the first column
+# Display the traffic data table in the first column
 with col1:
     st.subheader("Traffic Data Table")
-    st.dataframe(df)
+    st.dataframe(df)  # Show the raw data
 
 # Display summary statistics in the second column
 with col2:
     st.subheader("Traffic Data Statistics")
+    
+    # Calculate total and average number of cars going up and down the road
     total_up = df['NumberOfCarsGoingUpTheRoad'].sum()
     total_down = df['NumberOfCarsGoingDownTheRoad'].sum()
     avg_up = df['NumberOfCarsGoingUpTheRoad'].mean()
     avg_down = df['NumberOfCarsGoingDownTheRoad'].mean()
 
+    # Display the calculated metrics
     st.metric("Total Cars Going Up", total_up)
     st.metric("Total Cars Going Down", total_down)
     st.metric("Average Cars Going Up per Day", f"{avg_up:.2f}")
     st.metric("Average Cars Going Down per Day", f"{avg_down:.2f}")
 
-# Grouped stats by location
-stats_by_location = df.groupby('Location').agg(
-    Total_Up=('NumberOfCarsGoingUpTheRoad', 'sum'),
-    Total_Down=('NumberOfCarsGoingDownTheRoad', 'sum'),
-    Avg_Up=('NumberOfCarsGoingUpTheRoad', 'mean'),
-    Avg_Down=('NumberOfCarsGoingDownTheRoad', 'mean')
-).reset_index()
+# Add a dropdown menu to select sorting by Date or Location
+sort_by = st.selectbox("Sort by", options=["Date", "Location"])
 
-# Add sorting options for Date or Location
-sort_by = st.selectbox("Sort by", options=["Location", "Date"])
-
-# Group stats by date if the user selects "Date"
+# Show statistics based on Date selection
 if sort_by == "Date":
-    df['Date'] = pd.to_datetime(df['Date'])  # Ensure 'Date' column is in datetime format
-    stats_by_date = df.groupby('Date').agg(
-        Total_Up=('NumberOfCarsGoingUpTheRoad', 'sum'),
-        Total_Down=('NumberOfCarsGoingDownTheRoad', 'sum'),
-        Avg_Up=('NumberOfCarsGoingUpTheRoad', 'mean'),
-        Avg_Down=('NumberOfCarsGoingDownTheRoad', 'mean')
-    ).reset_index()
-    stats_by_date.sort_values(by='Date', inplace=True)
+    # Allow the user to select a specific date
+    selected_date = st.date_input("Select Date", df['Date'].min())
+    
+    # Filter data for the selected date
+    df_filtered_by_date = df[df['Date'] == pd.to_datetime(selected_date)]
+    
+    # If there is data for the selected date
+    if not df_filtered_by_date.empty:
+        # Create two columns to display the stats and plot side by side
+        col3, col4 = st.columns(2)
 
-    # Display grouped stats by date
-    st.subheader("Traffic Stats by Date")
-    st.dataframe(stats_by_date)
+        with col3:
+            # Display the traffic stats for the selected date by location
+            st.subheader(f"Traffic Stats for {selected_date}")
+            
+            # Group the data by location and aggregate the statistics
+            stats_by_location_on_date = df_filtered_by_date.groupby('Location').agg(
+                Total_Up=('NumberOfCarsGoingUpTheRoad', 'sum'),
+                Total_Down=('NumberOfCarsGoingDownTheRoad', 'sum'),
+                Avg_Up=('NumberOfCarsGoingUpTheRoad', 'mean'),
+                Avg_Down=('NumberOfCarsGoingDownTheRoad', 'mean')
+            ).reset_index()
 
-    # Create and display the plot for date
-    fig, ax = plt.subplots(figsize=(10, 6))
+            # Display the aggregated statistics as a table
+            st.dataframe(stats_by_location_on_date)
 
-    sns.lineplot(data=stats_by_date.melt(id_vars='Date', value_vars=['Avg_Up', 'Avg_Down']),
-                 x='Date', y='value', hue='variable', ax=ax)
+        with col4:
+            # Create and display a bar plot for the average number of cars per location
+            fig, ax = plt.subplots(figsize=(8, 4))  # Set smaller figure size
 
-    ax.set_title("Average Number of Cars per Date")
-    ax.set_ylabel("Average Number of Cars")
-    ax.set_xlabel("Date")
-    ax.legend(title="Direction", labels=["Going Up", "Going Down"])
+            # Create a bar plot showing average cars going up and down by location
+            sns.barplot(
+                data=stats_by_location_on_date.melt(id_vars='Location', value_vars=['Avg_Up', 'Avg_Down']),
+                x='Location', y='value', hue='variable', ax=ax
+            )
 
-    st.pyplot(fig)
+            # Customize the plot with titles and labels
+            ax.set_title(f"Average Number of Cars per Location on {selected_date}")
+            ax.set_ylabel("Average Number of Cars")
+            ax.set_xlabel("Location")
+            ax.legend(title="Direction", labels=["Going Up", "Going Down"])
 
-# Group stats by location if the user selects "Location"
+            # Display the plot
+            st.pyplot(fig)
+
+# Show statistics based on Location selection
 else:
-    # Display grouped stats by location
-    st.subheader("Traffic Stats by Location")
-    st.dataframe(stats_by_location)
+    # Allow the user to select a specific location
+    selected_location = st.selectbox("Select Location", df['Location'].unique())
+    
+    # Filter data for the selected location
+    df_filtered_by_location = df[df['Location'] == selected_location]
+    
+    # If there is data for the selected location
+    if not df_filtered_by_location.empty:
+        # Create two columns to display the stats and plot side by side
+        col3, col4 = st.columns(2)
 
-    # Create and display the plot for location
-    fig, ax = plt.subplots(figsize=(10, 6))
+        with col3:
+            # Display the traffic stats for the selected location by date
+            st.subheader(f"Traffic Stats for {selected_location}")
+            
+            # Group the data by date and aggregate the statistics
+            stats_by_date_on_location = df_filtered_by_location.groupby('Date').agg(
+                Total_Up=('NumberOfCarsGoingUpTheRoad', 'sum'),
+                Total_Down=('NumberOfCarsGoingDownTheRoad', 'sum'),
+                Avg_Up=('NumberOfCarsGoingUpTheRoad', 'mean'),
+                Avg_Down=('NumberOfCarsGoingDownTheRoad', 'mean')
+            ).reset_index()
 
-    sns.barplot(
-        data=stats_by_location.melt(id_vars='Location', value_vars=['Avg_Up', 'Avg_Down']),
-        x='Location', y='value', hue='variable', ax=ax
-    )
+            # Display the aggregated statistics as a table
+            st.dataframe(stats_by_date_on_location)
 
-    ax.set_title("Average Number of Cars per Location")
-    ax.set_ylabel("Average Number of Cars")
-    ax.set_xlabel("Location")
-    ax.legend(title="Direction", labels=["Going Up", "Going Down"])
+        with col4:
+            # Create and display a line plot for the average number of cars per date
+            fig, ax = plt.subplots(figsize=(8, 4))  # Set smaller figure size
 
-    st.pyplot(fig)
+            # Create a line plot showing average cars going up and down by date
+            sns.lineplot(data=stats_by_date_on_location.melt(id_vars='Date', value_vars=['Avg_Up', 'Avg_Down']),
+                         x='Date', y='value', hue='variable', ax=ax)
+
+            # Customize the plot with titles and labels
+            ax.set_title(f"Average Number of Cars per Date at {selected_location}")
+            ax.set_ylabel("Average Number of Cars")
+            ax.set_xlabel("Date")
+            ax.legend(title="Direction", labels=["Going Up", "Going Down"])
+
+            # Display the plot
+            st.pyplot(fig)
