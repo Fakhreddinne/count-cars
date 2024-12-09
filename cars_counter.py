@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 # capturing or reading video
-cap = cv2.VideoCapture('cars2.mp4')
+cap = cv2.VideoCapture('cars.mp4')
 
 # adjusting frame rate
 fps = cap.set(cv2.CAP_PROP_FPS,1)

@@ -14,7 +14,7 @@ df = pd.read_excel(file_path)
 df['Date'] = pd.to_datetime(df['Date'])
 
 # Set the app title
-st.title("Traffic Data Visualization")
+st.title("INTERVIEWW 123 ")
 
 # Create two columns for the first section of the app
 col1, col2 = st.columns(2)
