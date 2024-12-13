@@ -14,7 +14,9 @@ df = pd.read_excel(file_path)
 df['Date'] = pd.to_datetime(df['Date'])
 
 # Set the app title
-st.title("INTERVIEWW 123 ")
+st.title("Car Counting Statistics")
+# Add a clickable link
+st.markdown('[See the presentation video - Voir la vidéo de présentation](https://drive.google.com/drive/folders/1gcXpD5dUGZVpuKqrTxgUXo9SoIGR9kdY?usp=sharing)')
 
 # Create two columns for the first section of the app
 col1, col2 = st.columns(2)
@@ -138,7 +140,7 @@ else:
 
             # Create a line plot showing average cars going up and down by date
             sns.lineplot(data=stats_by_date_on_location.melt(id_vars='Date', value_vars=['Avg_Up', 'Avg_Down']),
-                         x='Date', y='value', hue='variable', ax=ax)
+                        x='Date', y='value', hue='variable', ax=ax)
 
             # Customize the plot with titles and labels
             ax.set_title(f"Average Number of Cars per Date at {selected_location}")
